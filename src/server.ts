@@ -1,7 +1,6 @@
 import { createApp } from "./app";
+import { env } from "./config/env";
 
-const port = Number(process.env.PORT) || 4300;
-
-createApp().listen(port, () => {
+createApp().listen(env.PORT, () => {
   console.log("Server started");
 });
