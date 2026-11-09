@@ -1,9 +1,13 @@
 import { AppError } from "../errors";
 import * as taskModel from "../models/tasks.model";
-import { type TaskModel } from "../models/tasks.model";
+import type { TaskModel, TasksPaginatedModel } from "../models/tasks.model";
 
-export async function getAll(): Promise<TaskModel[]> {
-  return await taskModel.findAll();
+export async function getAll(
+  limit: number,
+  page: number,
+  done: boolean | undefined,
+): Promise<TasksPaginatedModel> {
+  return await taskModel.findAll(limit, page, done);
 }
 
 export async function getById(id: string): Promise<TaskModel> {

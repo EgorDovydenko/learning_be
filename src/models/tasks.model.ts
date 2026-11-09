@@ -1,17 +1,54 @@
 import { pool } from "../db/db";
 
-export type TaskModel = {
+export interface TaskModel {
   id: string;
   title: string;
   done: boolean;
-};
+}
 
-export async function findAll(): Promise<TaskModel[]> {
-  const { rows } = await pool.query<TaskModel>(
-    "SELECT id, title, done FROM tasks",
-  );
+export interface TasksPaginatedModel {
+  items: TaskModel[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
 
-  return rows;
+export async function findAll(
+  limit: number,
+  page: number,
+  done: boolean | undefined,
+): Promise<TasksPaginatedModel> {
+  const offset = (page - 1) * limit;
+
+  const totalQuery =
+    done === undefined
+      ? await pool.query<{ total: number }>(
+          "SELECT COUNT(*)::int as total FROM tasks",
+        )
+      : await pool.query<{ total: number }>(
+          "SELECT COUNT(*)::INT as total FROM tasks WHERE done = $1",
+          [done],
+        );
+
+  const itemsQuery =
+    done === undefined
+      ? await pool.query<TaskModel>(
+          "SELECT id, title, done FROM tasks LIMIT $1 OFFSET $2",
+          [limit, offset],
+        )
+      : await pool.query<TaskModel>(
+          "SELECT id, title, done FROM tasks WHERE done = $3 LIMIT $1 OFFSET $2",
+          [limit, offset, done],
+        );
+
+  const total = totalQuery.rows[0]?.total ?? 0;
+
+  return {
+    items: itemsQuery.rows,
+    total: total,
+    page: page,
+    totalPages: Math.ceil(total / limit),
+  };
 }
 
 export async function findById(id: string): Promise<TaskModel | null> {

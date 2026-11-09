@@ -3,16 +3,23 @@ import * as tasksController from "../controllers/tasks.controller";
 import {
   validateBody,
   validateParams,
+  validateQuery,
 } from "../middlewares/validate.middleware";
 import {
   createTaskBody,
+  listTasksQuery,
   taskIdParams,
   updateTaskBody,
 } from "../validation/tasks.validation";
 
 export const tasksRouter = Router();
 
-tasksRouter.get("/", tasksController.getAllTasks);
+tasksRouter.get(
+  "/",
+  validateQuery(listTasksQuery),
+  tasksController.getAllTasks,
+);
+
 tasksRouter.get("/:id", validateParams(taskIdParams), tasksController.getTask);
 
 tasksRouter.delete(

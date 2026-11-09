@@ -37,3 +37,21 @@ export function validateParams(schema: z.ZodType, errorMessage?: string) {
     next();
   };
 }
+
+export function validateQuery(schema: z.ZodType, errorMessage?: string) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const parsed = schema.safeParse(req.query);
+
+    if (!parsed.success) {
+      const zodErrorMessage = parsed.error.issues
+        .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+        .join("; ");
+
+      next(new AppError("validation", errorMessage ?? zodErrorMessage));
+      return;
+    }
+
+    res.locals.query = parsed.data;
+    next();
+  }
+}

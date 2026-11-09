@@ -2,12 +2,14 @@ import type { Request, Response } from "express";
 import * as tasksService from "../services/tasks.service";
 import {
   CreateTaskBodyType,
+  ListTasksQueryType,
   TaskIdParamsType,
   UpdateTaskBodyType,
 } from "../validation/tasks.validation";
 
 export async function getAllTasks(_req: Request, res: Response): Promise<void> {
-  res.json(await tasksService.getAll());
+  const { limit, page, done } = res.locals.query as ListTasksQueryType;
+  res.json(await tasksService.getAll(limit, page, done));
 }
 
 export async function getTask(_req: Request, res: Response): Promise<void> {
