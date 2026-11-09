@@ -31,9 +31,9 @@ export async function create(task: TaskModel): Promise<void> {
   ]);
 }
 
-export async function update(task: TaskModel): Promise<TaskModel> {
+export async function update(task: TaskModel): Promise<TaskModel | null> {
   const { rows } = await pool.query<TaskModel>(
-    "UPDATE tasks SET title = $2, done = $3 WHERE id = $1",
+    "UPDATE tasks SET title = $2, done = $3 WHERE id = $1 RETURNING id, title, done",
     [task.id, task.title, task.done],
   );
 
