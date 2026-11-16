@@ -15,6 +15,10 @@ export async function getById(id: string): Promise<ThemeModel | null> {
 }
 
 export async function create(title: string): Promise<ThemeModel> {
+  const existingTheme = await themeModel.findByTitle(title);
+
+  if (existingTheme) throw new AppError("conflict", "Theme exists");
+
   const theme: ThemeModel = {
     id: crypto.randomUUID(),
     title: title,

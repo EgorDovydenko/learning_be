@@ -20,6 +20,15 @@ export async function findById(id: string): Promise<ThemeModel | null> {
   return rows[0] ?? null;
 }
 
+export async function findByTitle(title: string): Promise<ThemeModel | null> {
+  const { rows } = await pool.query<ThemeModel>(
+    "SELECT id, title FROM themes WHERE title = $1",
+    [title],
+  );
+
+  return rows[0] ?? null;
+}
+
 export async function create(theme: ThemeModel): Promise<void> {
   await pool.query("INSERT INTO themes (id, title) VALUES ($1, $2)", [
     theme.id,
