@@ -22,21 +22,17 @@ tasksRouter.get(
 
 tasksRouter.get("/:id", validateParams(taskIdParams), tasksController.getTask);
 
-tasksRouter.delete(
-  "/:id",
-  validateParams(taskIdParams),
-  tasksController.removeTask,
-);
-
-tasksRouter.post(
-  "/",
-  validateBody(createTaskBody, "Invalid body. Title > 0 and < 200 symbols"),
-  tasksController.createTask,
-);
+tasksRouter.post("/", validateBody(createTaskBody), tasksController.createTask);
 
 tasksRouter.patch(
   "/:id",
   validateParams(taskIdParams),
   validateBody(updateTaskBody),
   tasksController.updateTask,
+);
+
+tasksRouter.delete(
+  "/:id",
+  validateParams(taskIdParams),
+  tasksController.removeTask,
 );

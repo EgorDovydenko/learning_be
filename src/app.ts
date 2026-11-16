@@ -1,5 +1,6 @@
 import express, { type Express } from "express";
 import { tasksRouter } from "./routes/tasks.route";
+import { themesRouter } from "./routes/themes.route";
 import { notFoundMiddleware } from "./middlewares/not-found.middleware";
 import { errorMiddleware } from "./middlewares/error.middleware";
 
@@ -14,6 +15,7 @@ export function createApp(): Express {
     });
   });
   app.use("/tasks", tasksRouter);
+  app.use("/themes", themesRouter);
 
   app.use(notFoundMiddleware);
   app.use(errorMiddleware);
