@@ -4,6 +4,10 @@ export interface TaskModel {
   id: string;
   title: string;
   done: boolean;
+  themes: {
+    id: string;
+    title: string;
+  }[];
 }
 
 export interface TasksPaginatedModel {
@@ -23,7 +27,7 @@ export async function findAll(
   const totalQuery =
     done === undefined
       ? await pool.query<{ total: number }>(
-          "SELECT COUNT(*)::int as total FROM tasks",
+          "SELECT COUNT(*)::INT as total FROM tasks",
         )
       : await pool.query<{ total: number }>(
           "SELECT COUNT(*)::INT as total FROM tasks WHERE done = $1",
@@ -60,12 +64,55 @@ export async function findById(id: string): Promise<TaskModel | null> {
   return rows[0] ?? null;
 }
 
-export async function create(task: TaskModel): Promise<void> {
-  await pool.query("INSERT INTO tasks (id, title, done) VALUES ($1, $2, $3)", [
-    task.id,
-    task.title,
-    task.done,
-  ]);
+export async function create(
+  task: TaskModel,
+  themeIds: string[],
+): Promise<TaskModel> {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    await client.query(
+      "INSERT INTO tasks (id, title, done) VALUES ($1, $2, $3)",
+      [task.id, task.title, task.done],
+    );
+
+    if (themeIds.length > 0) {
+      await client.query(
+        `INSERT INTO task_themes (task_id, theme_id)
+         SELECT $1, theme_id FROM unnest($2::uuid[]) AS themes(theme_id)`,
+        [task.id, themeIds],
+      );
+    }
+
+    const themes =
+      themeIds.length === 0
+        ? []
+        : (
+            await client.query<TaskModel["themes"][number]>(
+              `SELECT id, title
+               FROM themes
+               WHERE id = ANY($1::uuid[])
+               ORDER BY title`,
+              [themeIds],
+            )
+          ).rows;
+
+    await client.query("COMMIT");
+
+    return {
+      id: task.id,
+      title: task.title,
+      done: task.done,
+      themes,
+    };
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 export async function update(task: TaskModel): Promise<TaskModel | null> {

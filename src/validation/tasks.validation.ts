@@ -6,11 +6,13 @@ export const taskIdParams = z.object({
 
 export const createTaskBody = z.object({
   title: z.string().trim().min(1).max(200),
+  themesIds: z.array(z.uuid()).optional(),
 });
 
 export const updateTaskBody = z.object({
   title: z.string().trim().min(1).max(200).optional(),
   done: z.boolean().optional(),
+  themesIds: z.array(z.uuid()).optional(),
 });
 
 export const listTasksQuery = z.object({

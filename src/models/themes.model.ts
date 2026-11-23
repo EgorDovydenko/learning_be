@@ -29,6 +29,16 @@ export async function findByTitle(title: string): Promise<ThemeModel | null> {
   return rows[0] ?? null;
 }
 
+export async function checkIds(ids: string[]): Promise<string[]> {
+  const { rows } = await pool.query(
+    "SELECT id FROM themes WHERE id = ANY($1::uuid[])",
+    [ids],
+  );
+  console.log(rows);
+
+  return rows ?? [];
+}
+
 export async function create(theme: ThemeModel): Promise<void> {
   await pool.query("INSERT INTO themes (id, title) VALUES ($1, $2)", [
     theme.id,

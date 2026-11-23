@@ -18,22 +18,23 @@ export async function getTask(_req: Request, res: Response): Promise<void> {
 }
 
 export async function createTask(_req: Request, res: Response): Promise<void> {
-  const { title } = res.locals.body as CreateTaskBodyType;
-  const task = await tasksService.create(title);
+  const { title, themesIds } = res.locals.body as CreateTaskBodyType;
+  const task = await tasksService.create(title, themesIds ?? []);
   res.status(201).json(task);
 }
 
 export async function updateTask(_req: Request, res: Response): Promise<void> {
-  const { title, done } = res.locals.body as UpdateTaskBodyType;
+  const { title, done, themesIds } = res.locals.body as UpdateTaskBodyType;
   const { id } = res.locals.params as TaskIdParamsType;
 
   const editableTask = {
     id: id,
     title: title,
     done: done,
+    themes: [], // hardcode
   };
 
-  const task = await tasksService.update(editableTask);
+  const task = await tasksService.update(editableTask, themesIds ?? []);
   res.status(200).json(task);
 }
 
